@@ -1,38 +1,38 @@
-'use strict';
+'use strict'
 
-const app = require('app');
-const BrowserWindow = require('browser-window');
-const fs = require('fs');
-const ipc = require('ipc');
-const Menu = require('menu');
-const path = require('path');
-const Tray = require('tray');
-const Shortcut = require('electron-shortcut');
-const Positioner = require('electron-positioner');
-const Configstore = require('configstore');
-const pkg = require(path.join(__dirname, './package.json'));
-const conf = new Configstore(pkg.name, {animation: 'scale'});
+const app = require('app')
+const BrowserWindow = require('browser-window')
+const fs = require('fs')
+const ipc = require('ipc')
+const Menu = require('menu')
+const path = require('path')
+const Tray = require('tray')
+const Shortcut = require('electron-shortcut')
+const Positioner = require('electron-positioner')
+const Configstore = require('configstore')
+const pkg = require(path.join(__dirname, './package.json'))
+const conf = new Configstore(pkg.name, {animation: 'scale'})
 
 if (process.env.NODE_ENV !== 'production') {
-  require('crash-reporter').start();
-  require('electron-debug')();
+  require('crash-reporter').start()
+  require('electron-debug')()
 }
 
-require('electron-menu-loader')(path.join(__dirname, './menu'), [process.platform]);
+require('electron-menu-loader')(path.join(__dirname, './menu'), [process.platform])
 
 // prevent window being GC'd
-let win = null;
-let tray = null;
-let search = null;
+let win = null
+let tray = null
+let search = null
 
 app.on('window-all-closed', () => {
-  app.quit();
-});
+  app.quit()
+})
 
-function loadWindow(argument) {
+function loadWindow (argument) {
   win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 800,
     resizable: true,
     center: true,
     show: true,
@@ -40,109 +40,109 @@ function loadWindow(argument) {
     'web-preferences': {
       'preload': path.join(__dirname, 'browser.js')
     }
-  });
+  })
 
-  win.loadUrl('http://devdocs.io');
-  app.dock.show();
+  win.loadUrl('http://devdocs.io')
+  app.dock.show()
 
   win.on('closed', () => {
     // deref the window
     // for multiple windows store them in an array
-    app.dock.hide();
-    win = null;
-  });
+    app.dock.hide()
+    win = null
+  })
 
-  const page = win.webContents;
+  const page = win.webContents
 
   page.on('dom-ready', () => {
-    page.insertCSS(fs.readFileSync(path.join(__dirname, 'browser.css'), 'utf8'));
-    win.show();
-  });
+    page.insertCSS(fs.readFileSync(path.join(__dirname, 'browser.css'), 'utf8'))
+    win.show()
+  })
 }
 
 app.on('ready', () => {
-  app.dock.hide();
+  app.dock.hide()
 
-  tray = new Tray(path.join(__dirname, 'res', 'trayTemplate.png'));
+  tray = new Tray(path.join(__dirname, 'res', 'trayTemplate.png'))
   tray.setContextMenu(Menu.buildFromTemplate([{
     label: 'Open DevDrops (⌘ + ⇧ + /)',
-    click: function() {
+    click: function () {
       if (win === null) {
-        loadWindow();
+        loadWindow()
       } else {
-        win.focus();
+        win.focus()
       }
     }
   }, {
     label: 'Quit (⌘Q)',
-    click: function() {
-      app.quit();
+    click: function () {
+      app.quit()
     }
-  }]));
+  }]))
 
   search = new BrowserWindow({
     width: 280,
     show: false,
     frame: false,
     'skip-taskbar': true
-  });
-  search.setVisibleOnAllWorkspaces(true);
-  search.loadUrl('http://devdocs.io');
-  search.on('blur', function() {
-    search.hide();
-  });
+  })
+  search.setVisibleOnAllWorkspaces(true)
+  search.loadUrl('http://devdocs.io')
+  search.on('blur', function () {
+    search.hide()
+  })
 
-  let searchPosition = new Positioner(search);
-  searchPosition.move('topRight');
+  let searchPosition = new Positioner(search)
+  searchPosition.move('topRight')
 
-  const searchPage = search.webContents;
+  const searchPage = search.webContents
 
   searchPage.on('dom-ready', () => {
-    searchPage.insertCSS(fs.readFileSync(path.join(__dirname, 'search.css'), 'utf8'));
-    searchPage.executeJavaScript(fs.readFileSync(path.join(__dirname, 'search.js'), 'utf8'));
+    searchPage.insertCSS(fs.readFileSync(path.join(__dirname, 'search.css'), 'utf8'))
+    searchPage.executeJavaScript(fs.readFileSync(path.join(__dirname, 'search.js'), 'utf8'))
 
-    ipc.on('selected', function(event, href) {
-      search.hide();
+    ipc.on('selected', function (event, href) {
+      search.hide()
       if (win) {
-        win.focus();
+        win.focus()
       } else {
-        loadWindow();
+        loadWindow()
       }
-      win.loadUrl(href);
-    });
+      win.loadUrl(href)
+    })
 
-    ipc.on('search-exit', function() {
-      search.hide();
-    });
+    ipc.on('search-exit', function () {
+      search.hide()
+    })
 
-    ipc.on('win-exit', function() {
-      win.close();
-    });
-  });
+    ipc.on('win-exit', function () {
+      win.close()
+    })
+  })
 
   // register a shortcuts
-  Shortcut.register('Command+?', {
+  Shortcut.register('Alt+Space', {
     autoRegister: false,
     cmdOrCtrl: true
   }, () => {
     if (win) {
       if (!win.isMinimized()) {
-        win.minimize();
+        win.minimize()
       } else {
-        win.restore();
-        win.focus();
+        win.restore()
+        win.focus()
       }
     } else {
       if (search.isVisible()) {
-        search.hide();
+        search.hide()
       } else {
-        search.show();
+        search.show()
       }
     }
-  });
+  })
 
-});
+})
 
 app.on('menuitem-click', (e, args) => {
-  BrowserWindow.getFocusedWindow().webContents.send(e.event);
-});
+  BrowserWindow.getFocusedWindow().webContents.send(e.event)
+})

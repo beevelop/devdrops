@@ -6,13 +6,13 @@
 
 ## Install
 
-Only support OS X, requires OS X 10.8 or newer. [Download](https://github.com/ragingwind/devdogs/releases/latest), unzip, copy and run wherever you want
+Only support OS X, requires OS X 10.8 or newer. [Download](https://github.com/beevelop/devdrops/releases/latest), unzip, copy and run wherever you want
 
 ## Features something different
 
 ### Supporting global shortcut
 
-- `Command or Ctrl` + ?: Hide and show quick search menu
+- `Alt + Space`: Hide and show quick search menu
 
 ## Development
 
@@ -26,8 +26,8 @@ npm start
 
 ```
 npm install
-npm build
-npm package
+npm run build
+npm run package
 ```
 
 ## License
